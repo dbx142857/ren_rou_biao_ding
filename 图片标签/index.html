@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html ng-app="tag.app" lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <title>图片标签系统</title>
+        <link href="./static/css/tag-pic.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    </head>
+    <body ng-controller="UserTaskController">
+    <div style="width:100%;position:fixed;left:0;top:-52px;z-index:1000;" id="alertBox" class="alert alert-danger" role="alert">
+        <strong>Oh snap!</strong> Change a few things up and try submitting again.
+    </div>
+        <div id="log" ng-hide="user.realName">
+            <div id="log-window">
+                <form name="loginForm">
+                    <p>用户名</p>
+                    <input name="username" type="text" required="" ng-model="user.username" ng-change="loginError = null;" ng-disabled="UILock" ng-class="{'disabled': UILock}">
+                    <p>
+                        <small class="text-danger" ng-show="(loginForm.$submitted || loginForm.username.$touched) && loginForm.username.$error.required">请填写您的用户名</small>
+                    </p>
+                    
+                    <p>密码</p>
+                    <input name="password" type="password" ng-model="user.password" ng-change="loginError = null;" ng-disabled="UILock" ng-class="{'disabled': UILock}">
+                    
+                    <p><small ng-show="loginError" class="text-danger">{{Config.MESSAGE.INVALID_CREDENTIAL}}</small></p>
+                    <input class="btn btn-primary btn-sm" type="submit" ng-click="tagSystem.login(user)" value="登录" ng-disabled="UILock" ng-class="{'disabled': UILock}">
+                </form>
+            </div>
+        </div>
+        <div id="container">
+
+
+            <div id="context">
+                <div ng-repeat="t in tasks" ng-show="t === currentTask">
+                    <div ng-bind-html="t.div" strip-styles div="{{t.div}}"></div>
+                </div>
+            </div>
+
+
+            <div id="panel">
+
+                <div id="user">
+                    <p id="current-task" ng-show="userStat">已完成：<span>{{ tagSystem.completeTaskNum}}</span>个任务</p>
+                    <p id="current-user">
+                        <span ng-show="user.realName">当前用户：{{user.realName}}</span>
+                        <button class="btn btn-warning btn-sm" ng-show="user.realName" ng-click="tagSystem.logout()">注销</button>
+                        <button class="btn btn-primary btn-sm" ng-show="!user.realName">登陆</button>
+                    </p>
+                </div>
+
+
+
+
+                <div id="panel-tags">
+                    <p class="notice">请输入标签：</p>
+                    <input ng-model="tagSystem.newTag.name" name="tag" type="text" ng-disabled=" UILock || !user.realName" response-enter-action="tagSystem.addTag" ng-class="{'disabled': UILock}">
+                    &nbsp;&nbsp;<div class="btn btn-primary btn-sm" ng-click="tagSystem.addTag()">添加 (&crarr; 或 shift + &crarr;)</div>
+                    <p>&nbsp;</p>
+                    <div class="notice">已添加标签列表 (双击编辑)</div>
+                    <div class="text-light">每组最多{{TAG_APP_CONFIG.MAX_GROUP_SIZE}}个标签 (多余会被删除)</div>
+
+
+
+                    <ul id="panel-tags-list" class="tag-group-list" ng-model="tasks">
+                        <li ng-repeat="($index1,tagGroup) in tasks"
+                            current-tag-group
+                            current-index="{{$index}}"
+                            class="tag-group-list-item" >
+                            <div class="group-order">{{$index + 1}}</div>
+                            <ul  ui-sortable="tagSortableOptions" ng-model="tasks[$index1].initTags" class="tag-list">
+                                <li ng-repeat="($index,tag) in tagGroup.initTags"
+                                    class="tag tag-list-item" >
+                                    <span
+                                            ng-hide="tagSystem.ifEditingTags && tagSystem.editingGroupIndex===$index1 && tagSystem.editingTagIndex === $index" ng-dblclick="tagSystem.editTag($index,$index1,$event)"
+                                            class="list-tag"
+                                            ng-model="tasks[$index1].initTags[$index][0]"
+                                          ng-style="{'background-color': tagSystem.randomColor($parent.$index)}"
+                                          ng-class="{'text-danger': tagExists(newTag, tag)}"><b style="font-weight:normal;">{{tasks[$index1].initTags[$index][0]}}</b><b ng-if="!$last"> </b><b class="tag-group-separator" ng-if="$last">`</b></span>
+                                    <input type="text"
+                                           ng-show="tagSystem.ifEditingTags && tagSystem.editingGroupIndex===$index1 && tagSystem.editingTagIndex === $index"
+                                           response-enter-action="tagSystem.cancelEdit"
+                                            response-tab-action="tagSystem.cancelEdit">
+                                </li>
+                            </ul>
+
+                            <!--<div class="tag-group-operation">-->
+                                <!--<a href="#" class="delete fa fa-trash" ng-click="removeTagGroup($index)">&nbsp;删除</a>-->
+                                <!--<a href="#" class="edit fa fa-pencil" ng-click="editTagGroup($index)">&nbsp;编辑</a>-->
+                            <!--</div>-->
+                        </li>
+
+
+                    </ul>
+                </div>
+                <div id="panel-submit">
+                    <div class="btn btn-success btn-lg" ng-click="tagSystem.submitCurrentTask()" ng-disabled="UILock || tagSystem.ifEditingTags" ng-class="{'disabled': UILock}">下一个</div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="./static/js/jquery-1.10.2.js"></script>
+        <script src="http://cdn.jsdelivr.net/g/jquery.ui@1.10%28jquery.ui.core.min.js+jquery.ui.widget.min.js+jquery.ui.mouse.min.js+jquery.ui.sortable.min.js"></script>
+        <script src="http://www.cdnjs.net/ajax/libs/angular.js/1.3.9/angular.min.js"></script>
+        <script src="http://www.cdnjs.net/ajax/libs/angular.js/1.3.9/angular-sanitize.min.js"></script>
+        <script type="text/javascript" src="./static/js/sortable.js"></script>
+        <script src="./static/js/tag.api.js"></script>
+        <script src="./static/js/tag.app.js"></script>
+        <!--<script src="static/cogtu-optimized.js"></script>-->
+    </body>
+</html>
+<script>
+    $(function(){
+        $('#panel').css({
+            position:'initial'
+        })
+    })
+</script>

@@ -1,0 +1,170 @@
+<!--<!DOCTYPE html>-->
+<!--<html ng-app="tag.app" lang="zh">-->
+<!--<head>-->
+    <!--<meta charset="UTF-8">-->
+    <!--<meta id="viewport" name="viewport"-->
+          <!--content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,minimal-ui">-->
+    <!--<meta name="browsermode" content="application"/>-->
+
+<!Doctype html>
+<html ng-app="tag.app" xmlns=http://www.w3.org/1999/xhtml>
+<head>
+    <meta http-equiv=Content-Type content="text/html;charset=utf-8">
+    <meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1">
+    <meta content=always name=referrer>
+    <title>链接标定系统</title>
+
+    <link type="text/css" rel="stylesheet" href="static/css/base.css">
+    <link type="text/css" rel="stylesheet" href="static/css/lib/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="static/css/lib/bootstrap-theme.min.css">
+
+    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">-->
+    <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">-->
+    <!--<link rel="stylesheet" href="http://www.cdnjs.net/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.css">-->
+    <!--<link href="./static/css/tag-pic.css" rel="stylesheet">-->
+
+    <script src="static/js/lib/jquery-2.0.3.min.js"></script>
+    <script src="static/js/lib/bootstrap.min.js"></script>
+    <script src="static/js/layer/layer.js"></script>
+    <script src="static/js/lib/angular.min.js"></script>
+    <script src="static/js/lib/angular-sanitize.min.js"></script>
+    <script src="static/js/lib/angular-animate.min.js"></script>
+    <script src="static/js/tag.api.js"></script>
+    <script src="static/js/main.js"></script>
+
+    <!--<script type="text/javascript" src="http://www.cdnjs.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>-->
+    <!--<script src="http://cdn.jsdelivr.net/g/jquery.ui@1.10%28jquery.ui.core.min.js+jquery.ui.widget.min.js+jquery.ui.mouse.min.js+jquery.ui.sortable.min.js"></script>-->
+    <!--<script src="static/js/garbage.js"></script>-->
+    <!--<script src="http://www.cdnjs.net/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js"></script>-->
+    <!--<script src="http://www.cdnjs.net/ajax/libs/angular.js/1.3.9/angular.min.js"></script>-->
+    <!--<script src="http://www.cdnjs.net/ajax/libs/angular.js/1.3.9/angular-sanitize.min.js"></script>-->
+    <!--<script type="text/javascript" src="./static/js/sortable.js"></script>-->
+    <!--<script src="./static/js/tag.api.js"></script>-->
+    <!--<script src="./static/js/tag.app.js"></script>-->
+    <!--<script src="static/cogtu-optimized.js"></script>-->
+
+</head>
+<body response-key-action response-esc-action="handleEsc" style="padding: 10px;" ng-controller="taskController">
+<div style="width:50%;" ng-show="mainService.isLogined" id="leftPanel">
+    <h3>输入：(请用鼠标选中文本框中的文字进行标定)</h3>
+    <textarea id="inputarea" ng-focus="mainService.isFocus=true" onpaste="return false;" onkeydown="return false;" ng-blur="mainService.isFocus=false" ng-keydown="handleSelection($event)" ng-keyup="handleSelection($event)" ng-mousedown="handleSelection($event)" ng-mouseup="handleSelection($event)" ng-model="input" class="form-control" style="height: 300px;" placeholder="Textarea"></textarea>
+    <h3>输出:</h3>
+    <!--<textarea style="cursor: default;" disabled ng-model="output" class="form-control" rows="10" placeholder="Textarea"></textarea>-->
+    <div id="output_area" ng-bind-html="output" style="height:300px;" class="form-control">
+
+    </div>
+</div>
+
+<form ng-hide="mainService.isLogined" class="form-horizontal ng-scope ng-valid ng-dirty">
+    <fieldset>
+        <legend>用户登入</legend>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">用户名</label>
+            <div class="col-sm-10">
+                <input ng-model="mainService.user.logname" name="advertisers_name" type="text" class="form-control ng-valid ng-dirty" id="inputEmail3" placeholder="请输入你的用户名">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
+            <div class="col-sm-10">
+                <input ng-model="mainService.user.logpwd" name="advertisers_password" type="password" class="form-control ng-valid ng-dirty" id="inputPassword3" placeholder="请输入你的密码">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button ng-click="submit()" type="button" class="btn btn-default">登录</button>
+            </div>
+        </div>
+    </fieldset>
+</form>
+
+<!--&&mainService.selectedStr!==null-->
+<!--<div class="row">-->
+    <div id="selectPanel" ng-show="mainService.isLogined" style="width:50%;height:100%;position:fixed;right:0;top:0;z-index:10;background:white;padding:10px;box-shadow: inset 0 10px 10px rgba(221, 42, 206, 0.075);" class="col-md-6">
+        <p id="current-user">
+            <span ng-if="mainService.isLogined">当前用户：{{mainService.user.logname}}</span>
+            <button class="btn btn-warning btn-sm" ng-if="mainService.isLogined" ng-click="logout()">注销</button>
+            <button class="btn btn-primary btn-sm ng-hide" ng-if="!mainService.isLogined">登陆</button>
+        </p>
+        <form class="form-horizontal">
+            <fieldset>
+                <legend>关键词标定（按esc键隐藏当前面板）</legend>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">选中文字</label>
+                    <div class="col-sm-10">
+                        <textarea disabled type="text" class="form-control" id="selected_str_textarea" placeholder="选中文字">{{mainService.selectedStr}}</textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputPassword3" class="col-sm-2 control-label">对应百科链接</label>
+                    <div class="col-sm-10">
+                        <!--<input type="text" class="form-control" id="inputPassword3" placeholder="对应百科链接">-->
+                        <!--<div class="input-group">-->
+                            <!--<span class="input-group-addon" id="basic-addon2">http://www.</span>-->
+                            <input id="link_input" response-key-action response-enter-action="saveCurrentLink" ng-model="mainService.selectedStrLink" type="text" class="form-control" placeholder="输入链接并按回车键保存当前标定" aria-describedby="basic-addon2">
+                        <!--</div>-->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button ng-click="saveCurrentLink()" type="button" class=" btn-lg btn btn-primary">保存当前标定链接</button>
+
+
+                    </div>
+                </div>
+            </fieldset>
+
+        </form>
+        <div>
+            <fieldset>
+                <legend>当前任务已标定链接</legend>
+                <form class="form-horizontal">
+                    <div ng-repeat="item in links" class="form-group">
+                        <label for="inputEmail3" class="col-sm-2 control-label">
+                            <span ng-click="deleteCurrentLink($index)" style="margin-right:10px;cursor:pointer;color:red;" title="点击删除当前标定链接" class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            {{item.str}}
+                        </label>
+                        <div class="col-sm-10">
+                            <input disabled value="{{item.link}}" type="text" class="form-control" aria-describedby="basic-addon2">
+                        </div>
+                    </div>
+                    <div ng-show="links.length===0">
+                        暂时没有标定任何连接，请标定后再提交
+                    </div>
+                </form>
+            </fieldset>
+        </div>
+        <br><br><br>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button ng-click="handleSubmit()" type="button" class=" btn-lg btn btn-default">确认无误并提交该任务</button>
+            </div>
+        </div>
+
+    </div>
+<!--</div>-->
+
+</body>
+</html>
+
+<style>
+    ::selection{ background:#0CC; color:#fff;}
+    textarea{
+        margin-bottom:20px;
+    }
+    #selectPanel{
+        opacity:1;
+        transition:all linear 0.3s;
+        -webkit-transition:all linear 0.3s;
+        width:50%;
+        overflow:hidden;
+    }
+    #selectPanel.ng-hide {
+        opacity:0;
+        width:0%;
+    }
+    #output_area a{
+        background:#E2EC54;
+    }
+</style>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html ng-app="tag.app" lang="zh" ng-controller="UserTaskController">
+    <head>
+        <meta charset="UTF-8">
+        <title>文章标定系统</title>
+        <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    </head>
+    <body response-space-action="articleSystem.showNoticeWhenNope" response-enter-action="articleSystem.onEnterKeyPress" response-esc-action="articleSystem.hideAlert">
+        <div style="width:100%;position:fixed;left:0;top:-52px;z-index:100000;" id="alertBox" class="alert alert-danger" role="alert">
+
+        </div>
+        <div id="log" ng-hide="user.realName">
+            <div id="log-window">
+                <form name="loginForm">
+                    <p>用户名</p>
+                    <input name="username" type="text" required="" ng-model="user.username" ng-change="loginError = null;" ng-disabled="UILock" ng-class="{'disabled': UILock}">
+                    <p>
+                        <small class="text-danger" ng-show="(loginForm.$submitted || loginForm.username.$touched) && loginForm.username.$error.required">请填写您的用户名</small>
+                    </p>
+                    <p>密码</p>
+                    <input name="password" type="password" ng-model="user.password" ng-change="loginError = null;" ng-disabled="UILock" ng-class="{'disabled': UILock}">
+
+                    <p><small ng-show="loginError" class="text-danger">{{Config.MESSAGE.INVALID_CREDENTIAL}}</small></p>
+                    <input class="btn btn-primary btn-sm" type="submit" ng-click="articleSystem.login(user)" value="登录" ng-disabled="UILock" ng-class="{'disabled': UILock}">
+                </form>
+            </div>
+        </div>
+        <div id="container">
+            <div class="row">
+                <div ng-style="{height:articleSystem.sWinHeight}" style="overflow: hidden" class="col-xs-12 col-sm-6 col-lg-8">
+                    <div id="context" style="overflow: scroll;width:100%;height:100%;">
+
+                    </div>
+                </div>
+                <div ng-if="user.realName" id="panel" style="box-shadow:0px 5px 5px #999;" class="col-xs-6 col-lg-4">
+                    <h1>标题标定系统</h1>
+
+                    <div id="user">
+                        <p id="current-task">已完成：<span>{{ articleSystem.nCompleteTaskNum}}</span>个任务</p>
+                        <p id="current-user">
+                            <span ng-show="user.realName">当前用户：{{user.realName}}</span>
+                            <button class="btn btn-warning btn-sm" ng-show="user.realName" ng-click="articleSystem.logout()">注销</button>
+                            <button class="btn btn-primary btn-sm" ng-show="!user.realName">登陆</button>
+                        </p>
+                    </div>
+
+
+                    <div id="wizard" style="width:80%;background:lightgray;padding:10px;">
+                        <p>当前标定项目为：<b>{{articleSystem.oCurrentType.CHINESE_NAME}}</b>
+                            <span ng-if="articleSystem.oCurrentType.TYPE==='array'">
+                                (数量:<b>{{articleSystem.result[articleSystem.oCurrentType.NAME].length}}</b>)
+                            </span>
+                        </p>
+                        <div ng-if="articleSystem.oCurrentType.AUTO_FIND">
+                            <p>
+                                当前{{articleSystem.oCurrentType.CHINESE_NAME}}为:
+                            </p>
+                            <b style="display:block;padding:5px;height:300px;overflow:scroll;" class="result-area" id="resultArea" nng-bind-html="articleSystem.currentTypeValue">
+
+                            </b>
+                            <p ng-hide="articleSystem.bIsCurrentTaskEnd">请确认以上分析结果是否正确？</p>
+                            <p ng-show="articleSystem.bIsCurrentTaskEnd">当前任务标定完毕，点击进入下一个</p>
+                            <button ng-hide="articleSystem.bIsCurrentTaskEnd" ng-disabled="UILock || articleSystem.bIsCurrentTaskEnd" ng-click="articleSystem.enterNextSelecting()" type="button" class="btn btn-primary btn-lg">是</button>
+                            <button ng-hide="articleSystem.bIsCurrentTaskEnd" ng-disabled="UILock || articleSystem.bIsCurrentTaskEnd" ng-click="articleSystem.showNoticeWhenNope()" type="button" class="btn btn-default btn-lg">否</button>
+                        </div>
+
+                        <div id="panel-submit">
+                            <div class="btn btn-success btn-lg" ng-click="articleSystem.submitCurrentTask()" ng-disabled="UILock || !articleSystem.bIsCurrentTaskEnd" ng-show="articleSystem.bIsCurrentTaskEnd">下一个</div>
+                        </div>
+                    </div>
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="./static/js/jquery-1.10.2.js"></script>
+        <script src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+        <script src="static/js/angular.min.js"></script>
+        <script src="static/js/angular-animate.min.js"></script>
+        <!--<script src="https://code.angularjs.org/1.3.9/angular.min.js"></script>-->
+        <script src="./static/js/angular-sanitize.min.js"></script>
+        <script src="./static/js/tag.api.js"></script>
+        <script src="./static/js/tag.app.js"></script>
+    <style>
+        .result-area{
+            border:solid 2px #63ff3b;
+            transition: border 0.2s linear;
+        }
+        .hightlight-result-area{
+            border:solid 2px red;
+            transition: border 0.2s linear;
+        }
+        #log-window {
+            z-index:100000000000000000;
+            width: 240px;
+            /* height: 200px; */
+            background: white;
+            color: black;
+            position: relative;
+            top: 200px;
+            margin: auto;
+            padding: 20px 40px;
+            -webkit-box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            -moz-box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+        }
+        .result-area-item{
+            display:block;
+            margin:10px;
+        }
+    </style>
+    </body>
+</html>
